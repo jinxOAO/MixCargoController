@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 using WinAPI;
 
 namespace MixCargoController
@@ -12,24 +13,56 @@ namespace MixCargoController
     public static class UIBeltWindowPatcher
     {
         public static List<UICargoSetting> settings;
-        public static GameObject settingsObj = null;
+        public static GameObject settingContentsObj = null;
         public static void Init()
         {
-            if (settingsObj == null)
+            if (settingContentsObj == null)
             {
                 GameObject beltWindow = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Belt Window");
-                beltWindow.GetComponent<RectTransform>().sizeDelta = new Vector2(450, 284);
-                settingsObj = new GameObject("cargo-settings");
-                settingsObj.transform.SetParent(beltWindow.transform);
-                settingsObj.transform.localScale = Vector3.one;
-                settingsObj.transform.localPosition = new Vector3(-30, 60, 0);
+                beltWindow.GetComponent<RectTransform>().sizeDelta = new Vector2(470, 284);
+                //settingContentsObj = new GameObject("cargo-settings");
+                //settingContentsObj.transform.SetParent(beltWindow.transform);
+                //settingContentsObj.transform.localScale = Vector3.one;
+                //settingContentsObj.transform.localPosition = new Vector3(-30, 60, 0);
+
+                // 混带设定标题
+                GameObject oriTextObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Belt Window/item-sign/icon-tag-label");
+                GameObject titleObj = GameObject.Instantiate(oriTextObj, beltWindow.transform);
+                titleObj.name = "setting-title";
+                titleObj.GetComponent<RectTransform>().anchorMax = new Vector2(0, 1f);
+                titleObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 1f);
+                titleObj.GetComponent<RectTransform>().pivot = new Vector2(0, 0.5f);
+                titleObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(186, -71, 0);
+                titleObj.GetComponent<Localizer>().stringKey = "MCC混带设置".Translate();
+                titleObj.GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
+
+                // scrollview设定
+                GameObject oriScrollViewGroup = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Blueprint Browser/view-group");
+                GameObject scrollViewGroup = GameObject.Instantiate(oriScrollViewGroup, beltWindow.transform);
+                scrollViewGroup.name = "settings-view-group";
+                scrollViewGroup.GetComponent<Image>().color = new Color(0.038f, 0.049f, 0.066f, 0.285f);
+                scrollViewGroup.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(185, -83);
+                scrollViewGroup.GetComponent<RectTransform>().sizeDelta = new Vector2(150, 170);
+                settingContentsObj = scrollViewGroup.transform.Find("Scroll View/Viewport/Content").gameObject;
+                while (settingContentsObj.transform.childCount > 0) // 移除所有子对象
+                {
+                    GameObject.DestroyImmediate(settingContentsObj.transform.GetChild(settingContentsObj.transform.childCount - 1).gameObject);
+                }
+                GridLayoutGroup gridLayoutGroup = settingContentsObj.AddComponent<GridLayoutGroup>();
+                ContentSizeFitter contentSizeFitter = settingContentsObj.AddComponent<ContentSizeFitter>();
+                gridLayoutGroup.cellSize = new Vector2(UICargoSetting.width, UICargoSetting.height);
+                contentSizeFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+                contentSizeFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                scrollViewGroup.transform.Find("Scroll View/Viewport").GetComponent<RectTransform>().sizeDelta = new Vector2(0, -2); 
+                Vector3 oriLocalPosition = scrollViewGroup.transform.Find("Scroll View/Viewport").transform.localPosition;
+                scrollViewGroup.transform.Find("Scroll View/Viewport").transform.localPosition = new Vector3(oriLocalPosition.x, oriLocalPosition.y - 2, oriLocalPosition.z);
 
                 settings = new List<UICargoSetting>();
-                for (int i = 0; i < 5; i++)
-                {
-                    UICargoSetting setting = new UICargoSetting(i);
-                    settings.Add(setting);
-                }
+                //for (int i = 0; i < 5; i++)
+                //{
+                //    UICargoSetting setting = new UICargoSetting(i, settingContentsObj);
+                //    settings.Add(setting);
+                //}
             }
         }
 
@@ -47,11 +80,12 @@ namespace MixCargoController
                     {
                         BeltCargoInfo info = RuntimeData.infos[planetId][pathId];
                         int s = 0;
-                        int maxs = 4;
                         foreach (var pair in info.cargoLimit)
                         {
-                            if (s > maxs)
-                                break;
+                            if (s >= settings.Count)
+                            {
+                                settings.Add(new UICargoSetting(s, settingContentsObj));
+                            }
 
                             int itemId = pair.Key;
                             int limit = pair.Value;
@@ -59,32 +93,34 @@ namespace MixCargoController
                             settings[s].SetItem(itemId, limit);
                             s++;
                         }
-                        for (int i = s; i < settings.Count; i++)
+                        // 额外的空行
+                        if(s >= settings.Count)
+                        {
+                            settings.Add(new UICargoSetting(s, settingContentsObj));
+                        }
+                        settings[s].SetItem(0, 0);
+                        settings[s].obj.SetActive(true);
+
+                        // 其他行如果有则隐藏
+                        for (int i = s + 1; i < settings.Count; i++)
                         {
                             settings[i].SetItem(0, 0);
-                            if (i == info.cargoLimit.Count)
-                            {
-                                settings[i].obj.SetActive(true);
-                            }
-                            else
-                            {
-                                settings[i].obj.SetActive(false);
-                            }
+                            settings[i].obj.SetActive(false);
                         }
                     }
                     else
                     {
-                        for (int i = 0; i < settings.Count; i++)
+                        if (settings.Count == 0)
+                        {
+                            settings.Add(new UICargoSetting(0, settingContentsObj));
+                        }
+                        settings[0].SetItem(0, 0);
+                        settings[0].obj.SetActive(true);
+                        for (int i = 1; i < settings.Count; i++)
                         {
                             settings[i].SetItem(0, 0);
-                            if (i == 0)
-                            {
-                                settings[i].obj.SetActive(true);
-                            }
-                            else
-                            {
-                                settings[i].obj.SetActive(false);
-                            }
+                            settings[i].obj.SetActive(true);
+                            settings[i].obj.SetActive(false);
                         }
 
                     }
@@ -108,13 +144,13 @@ namespace MixCargoController
                     {
                         int itemId = pair.Key;
                         int count = pair.Value;
-                        int limit = info.cargoLimit.ContainsKey(itemId) ? info.cargoLimit[itemId] : 0;
+                        //int limit = info.cargoLimit.ContainsKey(itemId) ? info.cargoLimit[itemId] : 0;
 
                         for (int i = 0; i < settings.Count; i++)
                         {
                             if (settings[i].itemId == itemId)
                             {
-                                settings[i].SetCurCount(count, limit);
+                                settings[i].SetCurCount(count);
                                 break;
                             }
                         }
@@ -131,7 +167,15 @@ namespace MixCargoController
         }
 
         [HarmonyPostfix]
+        [HarmonyPatch(typeof(UIBeltWindow), "OnTakeBackPointerUp")]
+        public static void RecalcCargoCountAfterPlayerTakePutBeltItems(ref UIBeltWindow __instance)
+        {
+            RecalcCargoCurCount(__instance);
+        }
+
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(UIBeltWindow), "OnBeltIdChange")]
+        [HarmonyPatch(typeof(UIBeltWindow), "OnReverseButtonClick")]
         public static void OnBeltIdChangePostfix(ref UIBeltWindow __instance)
         {
             RefreshAll(__instance);
@@ -164,7 +208,7 @@ namespace MixCargoController
         {
             if (window == null)
                 window = UIRoot.instance?.uiGame?.beltWindow;
-            if (window != null)
+            if (window?.traffic?.factory != null)
             {
                 int planetId = window.traffic.factory.planetId;
                 int pathId = GetCurCargoPathId(window);

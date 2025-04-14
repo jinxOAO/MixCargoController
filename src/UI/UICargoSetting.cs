@@ -18,8 +18,10 @@ namespace MixCargoController
         public Text infoText;
         public Image icon;
         public static Sprite oriEmptySprite = null;
+        public static float width = 150;
+        public static float height = 36;
 
-        public UICargoSetting(int index)
+        public UICargoSetting(int index, GameObject parentObj)
         {
             if(oriEmptySprite == null)
             {
@@ -27,9 +29,13 @@ namespace MixCargoController
             }
 
             obj = new GameObject("setting");
-            obj.transform.SetParent(UIBeltWindowPatcher.settingsObj.transform);
             obj.transform.localScale = Vector3.one;
-            obj.transform.localPosition = new Vector3(0, -38 * index, 0);
+            RectTransform rect = obj.AddComponent<RectTransform>();
+            rect.sizeDelta = new Vector2(width, height);
+            obj.transform.SetParent(parentObj.transform, false);
+            obj.SetActive(false);
+            obj.SetActive(true);
+            //obj.transform.localPosition = new Vector3(0, -38 * index, 0);
 
             this.index = index;
             GameObject ori = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Belt Window/item-sign");
@@ -37,7 +43,10 @@ namespace MixCargoController
             iconObj.name = "icon";
             iconObj.transform.SetParent(obj.transform);
             iconObj.transform.localScale = Vector3.one;
-            iconObj.transform.localPosition = Vector3.zero;
+            iconObj.GetComponent<RectTransform>().sizeDelta = new Vector2(36, 36);
+            iconObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(30, 0, 0f);
+            iconObj.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0.5f);
+            iconObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0.5f);
             if (UIRoot.instance?.uiGame?.beltWindow != null)
             {
                 iconObj.GetComponent<UIButton>().onClick -= UIRoot.instance.uiGame.beltWindow.OnTagSelectButtonClick;
@@ -52,16 +61,19 @@ namespace MixCargoController
             }
             iconObj.GetComponent<UIButton>().tips.tipTitle = "MCC设置物品标题";
             iconObj.GetComponent<UIButton>().tips.tipText = "MCC设置物品说明";
+            iconObj.GetComponent<UIButton>().tips.width = 226;
             icon = iconObj.GetComponent<Image>();
 
-
             GameObject infoTextObj = iconObj.transform.Find("icon-tag-label").gameObject;
-            infoTextObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(100, -30, 0);
+            infoTextObj.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0.5f);
+            infoTextObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0.5f);
+            infoTextObj.GetComponent<RectTransform>().pivot = new Vector2(0, 0.5f);
             infoTextObj.transform.SetParent(obj.transform, true);
             GameObject.Destroy(infoTextObj.GetComponent<Localizer>());
             infoText = infoTextObj.GetComponent<Text>();    
-            infoText.alignment = TextAnchor.UpperLeft;
-            infoText.text = "255/256";
+            infoText.alignment = TextAnchor.MiddleLeft;
+            infoTextObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(115, 0, 0);
+            infoText.text = "";
 
             GameObject oriInputFieldObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Blueprint Browser/inspector-group/Scroll View/Viewport/Content/group-1/input-short-text"); if (oriInputFieldObj == null)
                 oriInputFieldObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Blueprint Browser/inspector-group/BP-panel-scroll(Clone)/Viewport/pane/group-1/input-short-text");
@@ -76,7 +88,7 @@ namespace MixCargoController
             ratioInputObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 0.5f);
             ratioInputObj.GetComponent<RectTransform>().anchorMax = new Vector2(0, 0.5f);
             ratioInputObj.GetComponent<RectTransform>().pivot = new Vector2(0, 0.5f);
-            ratioInputObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(25, 0, 0);
+            ratioInputObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(60, 0, 0);
             ratioInputObj.GetComponent<InputField>().characterLimit = 5;
             ratioInputObj.GetComponent<InputField>().transition = Selectable.Transition.None; // 要不然鼠标不在上面时颜色会很浅，刚打开容易找不到，不够明显
             ratioInputObj.GetComponent<Image>().color = new Color(0, 0, 0, 0.5f);
@@ -114,7 +126,7 @@ namespace MixCargoController
                 if (id != this.itemId) // 检测是不是重复设置的物品，如果重复则设置无效
                 {
                     UIBeltWindow window = UIBeltWindowPatcher.GetCurWindow();
-                    if (window != null)
+                    if (window?.traffic != null)
                     {
                         int planetId = window.traffic.factory.planetId;
                         int segPathId = UIBeltWindowPatcher.GetCurCargoPathId(window);
@@ -130,6 +142,10 @@ namespace MixCargoController
                             }
                         }
                     }
+                }
+                if (this.itemId != 0 && this.itemId != id)
+                {
+                    RemoveThisSetting();
                 }
                 SetItem(itemProto.ID, -1);
                 SaveThisSetting();
@@ -154,14 +170,14 @@ namespace MixCargoController
                 this.itemId = 0;
                 icon.sprite = oriEmptySprite;
                 valueInput.text = "0";
-                infoText.text = "-/-";
+                infoText.text = "";
             }
         }
 
         public void RemoveThisSetting()
         {
             UIBeltWindow window = UIBeltWindowPatcher.GetCurWindow();
-            if(window != null)
+            if(window?.traffic?.factory != null)
             {
                 int planetId = window.traffic.factory.planetId;
                 int segPathId = UIBeltWindowPatcher.GetCurCargoPathId(window);
@@ -176,7 +192,7 @@ namespace MixCargoController
             this.itemId = 0;
             icon.sprite = oriEmptySprite;
             valueInput.text = "0";
-            infoText.text = "-/-";
+            infoText.text = "";
 
             UIBeltWindowPatcher.RefreshAll();
         }
@@ -201,7 +217,7 @@ namespace MixCargoController
             valueInput.text = value.ToString();
 
             UIBeltWindow window = UIBeltWindowPatcher.GetCurWindow();
-            if (window != null)
+            if (window?.traffic?.factory != null)
             {
                 int planetId = window.traffic.factory.planetId;
                 int segPathId = UIBeltWindowPatcher.GetCurCargoPathId(window);
@@ -221,9 +237,9 @@ namespace MixCargoController
 
         }
 
-        public void SetCurCount(int curCount, int limitCount) 
+        public void SetCurCount(int curCount) 
         {
-            infoText.text = curCount.ToString() + "/" + limitCount.ToString();
+            infoText.text = curCount.ToString();// + "/" + limitCount.ToString();
         }
     }
 }

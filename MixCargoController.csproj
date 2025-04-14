@@ -87,6 +87,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\Patcher\BeltCargoInfo.cs" />
     <Compile Include="src\Patcher\BeltCargoCountLogic.cs" />
+    <Compile Include="src\Patcher\PathChangePatcher.cs" />
     <Compile Include="src\Patcher\RuntimeData.cs" />
     <Compile Include="src\UI\UIBeltWindowPatcher.cs" />
     <Compile Include="src\UI\UICargoSetting.cs" />

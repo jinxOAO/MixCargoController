@@ -30,6 +30,7 @@ namespace MixCargoController
         {
             Harmony.CreateAndPatchAll(typeof(UIBeltWindowPatcher));
             Harmony.CreateAndPatchAll(typeof(BeltCargoCountLogic));
+            Harmony.CreateAndPatchAll(typeof(PathChangePatcher));
 
             Localizations.AddLocalizations();
         }
