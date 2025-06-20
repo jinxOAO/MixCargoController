@@ -27,18 +27,29 @@ namespace MixCargoController
 
         public void AddOrUpdateLimit(int itemId, int limit)
         {
-            cargoLimit[itemId] = limit;
-            cargoCount[itemId] = 0;
+            lock (cargoLimit)
+            {
+                cargoLimit[itemId] = limit;
+            }
+            lock (cargoCount)
+            {
+                cargoCount[itemId] = 0;
+            }
             RefreshItemLimit();
         }
 
         public void RemoveLimit(int itemId)
         {
-            if(cargoLimit.ContainsKey(itemId))
-                cargoLimit.Remove(itemId);
-            if(cargoCount.ContainsKey(itemId))
-                cargoCount.Remove(itemId);
-
+            lock (cargoLimit)
+            {
+                if (cargoLimit.ContainsKey(itemId))
+                    cargoLimit.Remove(itemId);
+            }
+            lock (cargoCount)
+            {
+                if (cargoCount.ContainsKey(itemId))
+                    cargoCount.Remove(itemId);
+            }
             RefreshItemLimit();
         }
 

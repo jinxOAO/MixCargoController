@@ -17,6 +17,18 @@ namespace MixCargoController
             infos = new ConcurrentDictionary<int, ConcurrentDictionary<int, BeltCargoInfo>>();
         }
 
+        public static bool HasRules(int planetId, int segPathId)
+        {
+            if (!infos.ContainsKey(planetId))
+                return false;
+            if (!infos[planetId].ContainsKey(segPathId))
+                return false;
+            if (!infos[planetId][segPathId].enabled)
+                return false;
+            return true;
+        }
+
+
         public static void Import(BinaryReader r)
         {
             Init();

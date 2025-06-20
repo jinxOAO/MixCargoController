@@ -22,7 +22,7 @@ namespace MixCargoController
     {
         public const string NAME = "MixCargoControllerPlugin";
         public const string GUID = "com.GniMaerd.MixCargoControllerPlugin";
-        public const string VERSION = "0.1.0";
+        public const string VERSION = "0.1.1";
         public const int VERSIONINT = 100;
         public static int versionWhenLoading = VERSIONINT;
 
