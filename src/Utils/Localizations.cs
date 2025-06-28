@@ -16,6 +16,8 @@ namespace MixCargoController
 
             LocalizationModule.RegisterTranslation("MCC重复物品提示", "Cannot select duplicate items", "不能选择重复的物品", "Cannot select duplicate items");
             LocalizationModule.RegisterTranslation("MCC混带设置", "Mix-Cargo Setting", "混带控制", "Mix-Cargo Setting");
+            LocalizationModule.RegisterTranslation("MCC填满传送带线路", "Fill path", "填满线路", "Fill path");
+            LocalizationModule.RegisterTranslation("MCC填满传送带线路说明", "Click this button, all cargos' limit will be scaled according to the current ratio, so that the total limit of all cargos will fill the capacity of the entire belt path as much as possible.\nIf you modified the path length or cargo settings, you may need to click the button again to reclaculate the settings.", "点击此按钮，所有货物数量限制将按照当前比例缩放，使得所有货物限制的总和尽可能填满整条线路的容量。\n若你修改了线路长度或货物设置，可能需要点击按钮来重新计算数值。", "Click this button, all cargos' limit will be scaled according to the current ratio, so that the total limit of all cargos will fill the capacity of the entire belt path as much as possible.\nIf you modified the path length or cargo settings, you may need to click the button again to reclaculate the settings.");
         }
     }
 }

@@ -33,7 +33,7 @@ namespace MixCargoController
                 titleObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 1f);
                 titleObj.GetComponent<RectTransform>().pivot = new Vector2(0, 0.5f);
                 titleObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(186, -71, 0);
-                titleObj.GetComponent<Localizer>().stringKey = "MCC混带设置".Translate();
+                titleObj.GetComponent<Localizer>().stringKey = "MCC混带设置";
                 titleObj.GetComponent<Text>().alignment = TextAnchor.MiddleLeft;
 
                 // scrollview设定
@@ -63,6 +63,54 @@ namespace MixCargoController
                 //    UICargoSetting setting = new UICargoSetting(i, settingContentsObj);
                 //    settings.Add(setting);
                 //}
+
+                //填充线路按钮
+                GameObject oriButtonObj = GameObject.Find("UI Root/Overlay Canvas/In Game/Windows/Belt Window/state/reverse-button");
+                GameObject fillTheBeltLineBtnObj = GameObject.Instantiate(oriButtonObj, beltWindow.transform);
+                fillTheBeltLineBtnObj.name = "fill-button";
+                fillTheBeltLineBtnObj.transform.localScale = Vector3.one;
+                fillTheBeltLineBtnObj.GetComponent<RectTransform>().anchorMax = new Vector2(0, 1);
+                fillTheBeltLineBtnObj.GetComponent<RectTransform>().anchorMin = new Vector2(0, 1);
+                fillTheBeltLineBtnObj.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(274, -71);
+                fillTheBeltLineBtnObj.GetComponent<RectTransform>().sizeDelta = new Vector3(60, 20);
+                GameObject.DestroyImmediate(fillTheBeltLineBtnObj.GetComponent<UIButton>());
+                fillTheBeltLineBtnObj.AddComponent<UIButton>();
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().onClick += (x) => { FillTheBeltPath(); };
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().tips.corner = 3;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().tips.width = 225;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().tips.tipTitle = "MCC填满传送带线路";
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().tips.tipText = "MCC填满传送带线路说明";
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().audios = oriButtonObj.GetComponent<UIButton>().audios;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions = new UIButton.Transition[2];
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0] = new UIButton.Transition();
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].target = fillTheBeltLineBtnObj.GetComponent<Image>();
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].damp = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].mouseoverSize = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].pressedSize = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].highlightSizeMultiplier = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].highlightColorMultiplier = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].highlightAlphaMultiplier = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].mouseoverColor = new Color(0.2093f, 0.7724f, 0.9057f, 1);
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].normalColor = new Color(0.2199f, 0.6281f, 0.7642f, 0.7451f);
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].pressedColor = new Color(0.1149f, 0.6604f, 0.8396f, 1);
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].highlightColorOverride = new Color(0, 0, 0, 0);
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[0].disabledColor = new Color(1, 1, 1, 0.0431f);
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1] = new UIButton.Transition();
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].target = fillTheBeltLineBtnObj.transform.Find("text").GetComponent<Text>();
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].damp = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].mouseoverSize = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].pressedSize = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].highlightSizeMultiplier = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].highlightColorMultiplier = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].highlightAlphaMultiplier = 1;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].mouseoverColor = Color.white;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].normalColor = Color.white;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].pressedColor = Color.white;
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].highlightColorOverride = new Color(0, 0, 0, 0);
+                fillTheBeltLineBtnObj.GetComponent<UIButton>().transitions[1].disabledColor = new Color(1, 1, 1, 0.1353f);
+                fillTheBeltLineBtnObj.transform.Find("text").GetComponent<Localizer>().stringKey = "MCC填满传送带线路";
+                fillTheBeltLineBtnObj.transform.Find("text").GetComponent<Text>().text = "MCC填满传送带线路".Translate();
+
             }
         }
 
@@ -254,6 +302,40 @@ namespace MixCargoController
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 按照当前比例修改限制值，以尽可能填满传送带（但不超出）
+        /// </summary>
+        public static void FillTheBeltPath()
+        {
+            UIBeltWindow window = GetCurWindow();
+            if (window?.traffic?.factory != null)
+            {
+                int planetId = window.traffic.factory.planetId;
+                int pathId = GetCurCargoPathId(window);
+                int bufferLength = window.traffic.pathPool[pathId].bufferLength;
+                int cargoMaxCount = bufferLength / 10;
+                if (RuntimeData.HasRules(planetId, pathId))
+                {
+                    int total = 0;
+                    BeltCargoInfo info = RuntimeData.infos[planetId][pathId];
+                    List<int> items = new List<int>();
+                    foreach (var pair in info.cargoLimit)
+                    {
+                        items.Add(pair.Key);
+                        total += pair.Value;
+                    }
+                    if (total != 0)
+                    {
+                        foreach (var item in items)
+                        {
+                            info.cargoLimit[item] = (int)(info.cargoLimit[item] * 1.0 / total * cargoMaxCount);
+                        }
+                        RefreshAll(window);
                     }
                 }
             }
