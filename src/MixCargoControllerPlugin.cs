@@ -22,7 +22,7 @@ namespace MixCargoController
     {
         public const string NAME = "MixCargoControllerPlugin";
         public const string GUID = "com.GniMaerd.MixCargoControllerPlugin";
-        public const string VERSION = "0.1.2";
+        public const string VERSION = "1.0.0";
         public const int VERSIONINT = 100;
         public static int versionWhenLoading = VERSIONINT;
 
@@ -31,6 +31,7 @@ namespace MixCargoController
             Harmony.CreateAndPatchAll(typeof(UIBeltWindowPatcher));
             Harmony.CreateAndPatchAll(typeof(BeltCargoCountLogic));
             Harmony.CreateAndPatchAll(typeof(PathChangePatcher));
+            Harmony.CreateAndPatchAll(typeof(ParametersPatcher));
 
             Localizations.AddLocalizations();
         }

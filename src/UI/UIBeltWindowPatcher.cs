@@ -317,8 +317,8 @@ namespace MixCargoController
             {
                 int planetId = window.traffic.factory.planetId;
                 int pathId = GetCurCargoPathId(window);
-                int bufferLength = window.traffic.pathPool[pathId].bufferLength;
-                int cargoMaxCount = bufferLength / 10;
+                int cargoCapacity = window.traffic.pathPool[pathId].cargoCapacity;
+                int cargoMaxCount = cargoCapacity / 10;
                 if (RuntimeData.HasRules(planetId, pathId))
                 {
                     int total = 0;

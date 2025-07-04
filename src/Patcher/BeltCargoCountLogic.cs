@@ -36,6 +36,32 @@ namespace MixCargoController
             }
         }
 
+
+        //[HarmonyPostfix]
+        //[HarmonyPatch(typeof(CargoTraffic), "TryPickItemAtRear")]
+        //public static void PickFromRearPostfix(ref CargoTraffic __instance, int beltId, int __result)
+        //{
+        //    if (__result > 0)
+        //    {
+        //        if (RuntimeData.infos.ContainsKey(__instance.factory.planetId))
+        //        {
+        //            int segPathId = __instance.beltPool[beltId].segPathId;
+        //            if (RuntimeData.infos[__instance.factory.planetId].ContainsKey(segPathId))
+        //            {
+        //                if (RuntimeData.infos[__instance.factory.planetId][segPathId].cargoCount.ContainsKey(__result))
+        //                {
+        //                    var obj = RuntimeData.infos[__instance.factory.planetId][segPathId];
+        //                    lock (obj)
+        //                    {
+        //                        RuntimeData.infos[__instance.factory.planetId][segPathId].cargoCount[__result]--;
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+
+
         /// <summary>
         /// 爪子放置到传送带上，且物品有堆叠才会调用
         /// </summary>
@@ -75,7 +101,6 @@ namespace MixCargoController
             return true;
         }
 
-
         /// <summary>
         /// 爪子放置到传送带上，且物品有堆叠才会调用
         /// </summary>
@@ -102,9 +127,44 @@ namespace MixCargoController
                 }
             }
 
-
             return true;
         }
+
+
+        //[HarmonyPrefix]
+        //[HarmonyPatch(typeof(CargoTraffic), "TryInsertItemAtHead")]
+        //public static bool TryInsertAtHeadSimplePrefix(ref CargoTraffic __instance, int beltId, int itemId, byte stack, byte inc, ref bool __result)
+        //{
+        //    if (RuntimeData.infos.ContainsKey(__instance.factory.planetId))
+        //    {
+        //        int segPathId = __instance.beltPool[beltId].segPathId;
+        //        if (RuntimeData.infos[__instance.factory.planetId].ContainsKey(segPathId))
+        //        {
+        //            if (!RuntimeData.infos[__instance.factory.planetId][segPathId].enabled) // 未启用
+        //                return true;
+
+        //            if (RuntimeData.infos[__instance.factory.planetId][segPathId].CanInsert(itemId))
+        //            {
+        //                __result = __instance.pathPool[__instance.beltPool[beltId].segPathId].TryInsertItemAtHeadAndFillBlank(itemId, stack, inc);
+        //                if (__result)
+        //                {
+        //                    var obj = RuntimeData.infos[__instance.factory.planetId][segPathId];
+        //                    lock (obj)
+        //                    {
+        //                        RuntimeData.infos[__instance.factory.planetId][segPathId].cargoCount[itemId]++;
+        //                    }
+        //                }
+        //                return false;
+        //            }
+        //            else
+        //            {
+        //                __result = false;
+        //                return false;
+        //            }
+        //        }
+        //    }
+        //    return true;
+        //}
 
 
         public static void CargoPathTryInsertStackPatch(this CargoPath _this, int index, int itemId, int maxStack, ref int count, ref int inc, int planetId, int segPathId, bool canAddNewCargo)
