@@ -97,6 +97,7 @@ namespace MixCargoController
                                 RuntimeData.infos[planetId][pathId] = new BeltCargoInfo();
                         }
                         __result = true;
+                        UIBeltWindowPatcher.RefreshAll();
                     }
                     
                 }
